@@ -84,8 +84,7 @@ Verse Bible::nextVerse() {
 	//infile.clear();
 	getline(infile, line);
 	Verse next(line);
-	next.display();
-	cout << endl;
+	//next.display();
 	return next;
 }
 

@@ -6,9 +6,122 @@
 #include <string> 
 #include <stdio.h>
 #include <stdlib.h>
+#include "fifo.h"
+
 using namespace std;
 
-int main(int argc, char** argv) {
+int main() {
+
+	Bible webBible("/home/class/csc3004/Bibles/web-complete");
+
+	int b, c, v, r;
+	LookupResult result;
+	Verse verse;
+
+	b = 1;
+	c = 1;
+	v = 1;
+	r = 0;
+
+	while (true) {
+		Fifo read("read");
+		Fifo write("write");
+		read.openread();
+		string line = read.recv();
+		Ref ref(line);
+		read.fifoclose();
+
+		string strbook = GetNextToken(line, ":");
+		b = atoi(strbook.c_str());
+
+		string strchap = GetNextToken(line, ":");
+		c = atoi(strchap.c_str());
+
+		string strverse = GetNextToken(line, " ");
+		v = atoi(strverse.c_str());
+
+		string strrepeat = GetNextToken(line, " ");
+		r = atoi(strrepeat.c_str());
+
+		makeMap();
+
+		string refNum = to_string(ref.getBook()).append(":").append(to_string(ref.getChap())).append(":").append(to_string(ref.getVerse()));
+		int location = webBible.indexSearch(refNum);
+		if (location == -1) {
+			string error;
+			if (b < 1 || b > 66) {
+				result = NO_BOOK;
+			}
+			else if (c > 150 || c < 1) {
+				result = NO_CHAPTER;
+			}
+			else if (v > 176 || v < 1) {
+				result = NO_VERSE;
+			}
+			else {
+				result = SUCCESS;
+			}
+			if (result == NO_CHAPTER) {
+				error = webBible.error(NO_CHAPTER);
+				write.openwrite();
+				write.send(error);
+				write.send(getName(ref.getBook()));
+				write.fifoclose();
+			}
+			else if (result == NO_VERSE) {
+				error = webBible.error(NO_VERSE);
+				write.openwrite();
+				write.send(error);
+				write.send(getName(ref.getBook()));
+				write.fifoclose();
+			}
+			else if (result == NO_BOOK) {
+				error = webBible.error(NO_BOOK);
+				write.openwrite();
+				write.send(error);
+				write.fifoclose();
+			}
+			else if (result == OTHER) {
+				error = webBible.error(OTHER);
+				write.openwrite();
+				write.send(error);
+				write.fifoclose();
+			}
+			else if (result == SUCCESS){
+				error = webBible.error(SUCCESS);
+				write.openwrite();
+				write.send(error);
+				write.fifoclose();
+			}
+		}
+		else {
+			//cout << "Result status: " << result << endl;
+			verse = webBible.lookup(location);
+
+			write.openwrite();
+			string reference = getName(ref.getBook()).append(" ").append(to_string(ref.getChap()).append(":").append(to_string(ref.getVerse()).append(" ")));
+			string text = verse.getVerse();
+			write.send(reference.append(text));
+			write.fifoclose();
+
+			if (r > 0) {
+				write.openwrite();
+				for (int i = 0; i < r - 1; i++) {
+					verse = webBible.nextVerse();
+					ref = verse.getRef();
+					string reference = getName(ref.getBook()).append(" ").append(to_string(ref.getChap()).append(":").append(to_string(ref.getVerse()).append(" ")));
+					string next = verse.getVerse();
+					write.send(reference.append(next));
+				}
+			}
+		}
+	}
+
+
+
+
+
+	/*
 	// Create Bible object to process the raw text file
 	Bible webBible("/home/class/csc3004/Bibles/web-complete");
 
@@ -90,5 +203,5 @@ int main(int argc, char** argv) {
 		}
 	}
 	cout << endl;
-	
+	*/
 }
