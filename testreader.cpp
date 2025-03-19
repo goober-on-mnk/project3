@@ -23,13 +23,15 @@ int main() {
 	v = 1;
 	r = 0;
 
+	Fifo read("read");
+	Fifo write("write");
+	read.openread();
+	write.openwrite();
+
 	while (true) {
-		Fifo read("read");
-		Fifo write("write");
-		read.openread();
+		
 		string line = read.recv();
 		Ref ref(line);
-		read.fifoclose();
 
 		string strbook = GetNextToken(line, ":");
 		b = atoi(strbook.c_str());
@@ -63,49 +65,36 @@ int main() {
 			}
 			if (result == NO_CHAPTER) {
 				error = webBible.error(NO_CHAPTER);
-				write.openwrite();
 				write.send(error);
 				write.send(getName(ref.getBook()));
-				write.fifoclose();
 			}
 			else if (result == NO_VERSE) {
 				error = webBible.error(NO_VERSE);
-				write.openwrite();
 				write.send(error);
 				write.send(getName(ref.getBook()));
-				write.fifoclose();
 			}
 			else if (result == NO_BOOK) {
 				error = webBible.error(NO_BOOK);
-				write.openwrite();
 				write.send(error);
-				write.fifoclose();
 			}
 			else if (result == OTHER) {
 				error = webBible.error(OTHER);
-				write.openwrite();
 				write.send(error);
-				write.fifoclose();
 			}
 			else if (result == SUCCESS){
 				error = webBible.error(SUCCESS);
-				write.openwrite();
 				write.send(error);
-				write.fifoclose();
 			}
 		}
 		else {
 			//cout << "Result status: " << result << endl;
 			verse = webBible.lookup(location);
 
-			write.openwrite();
 			string reference = getName(ref.getBook()).append(" ").append(to_string(ref.getChap()).append(":").append(to_string(ref.getVerse()).append(" ")));
 			string text = verse.getVerse();
 			write.send(reference.append(text));
-			write.fifoclose();
 
 			if (r > 0) {
-				write.openwrite();
 				for (int i = 0; i < r - 1; i++) {
 					verse = webBible.nextVerse();
 					ref = verse.getRef();
