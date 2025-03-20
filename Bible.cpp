@@ -91,13 +91,13 @@ Verse Bible::nextVerse() {
 // REQUIRED: Return an error message string to describe status
 string Bible::error(LookupResult status) {
 	if (status == NO_CHAPTER) {
-		return "Error: Chapter does not exist in the book of ";
+		return "Error: Chapter ";
 	}
 	else if (status == NO_VERSE) {
-		return "Error: Verse does not exist in ";
+		return "Error: Verse ";
 	}
 	else if (status == NO_BOOK) {
-		return "Error: Book does not exist";
+		return "Error: Book ";
 	}
 	else if (status == OTHER) {
 		return "Error: Invalid number of entries detected";
