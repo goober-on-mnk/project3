@@ -1,65 +1,48 @@
-# Bibleajax program
-# Bob Kasper, MVNU Computer Science
-# updated January 2020 to use
-# c++11 compiler option, current paths on cs.mvnu.edu
+# Simple build for the AjaxDemoclientserver to lookup Bible thing
 
-# This is a Makefile for the Bible web app demo program.
-# Copy this directory to a location within your home directory. 
-# Change the USER name value below to your own user name.
-# Then use "make" to build the server program,
-# and deploy it to the live web server directory.
-# To test the program, go to http://cs.mvnu.edu/class/csc3004/USER/
-# and open the bibleajax.html link.
-
-# TO DO: Must replace "username" by your username
 USER= dergill
 
-# Use GNU C++ compiler with C++11 standard
 CC= g++
 CFLAGS= -g -std=c++11
 
-all:	bibleajax.cgi PutCGI PutHTML
+all:	client server  PutCGI PutHTML
 
-# TO DO: For bibleajax.cgi, add dependencies to include
-# compiled classes from Project 1 to be linked into the executable program
-bibleajax.cgi:	bibleajax.o
-		$(CC) $(CFLAGS) -o bibleajax.cgi bibleajax.o Bible.o Ref.o Verse.o -lcgicc 
-		# -l option is necessary to link with cgicc library
+client.o: 	client.cpp fifo.h Ref.h Verse.h Bible.h
+		$(CC) $(CFLAGS) -c client.cpp
 
-# main program to handle AJAX/CGI requests for Bible references
-bibleajax.o:	bibleajax.cpp
-		$(CC) $(CFLAGS) -c bibleajax.cpp
+server.o:	server.cpp fifo.h Ref.h Verse.h Bible.h
+		$(CC) $(CFLAGS) -c server.cpp
 
-# TO DO: copy targets to build classes from Project 1:
-# Bible.o, Ref.o, Verse.o
+client:		client.o fifo.o Ref.o Verse.o Bible.o
+		$(CC) $(CFLAGS) -o client client.o fifo.o -L/usr/local/lib -lcgicc
 
-# Ref Object
-Ref.o : Ref.h Ref.cpp
-	$(CC) $(CFLAGS) -c Ref.cpp
+server: 	server.o fifo.o Ref.o Verse.o Bible.o
+		$(CC) $(CFLAGS) -o server server.o fifo.o Ref.o Verse.o Bible.o
 
-# Verse Object
-Verse.o : Ref.h Verse.h Verse.cpp
-	$(CC) $(CFLAGS) -c Verse.cpp
+fifo.o:		fifo.cpp fifo.h
+		$(CC) $(CFLAGS) -c fifo.cpp
 
-# Bible Object
-Bible.o : Ref.h Verse.h Bible.h Bible.cpp
-	$(CC) $(CFLAGS) -c Bible.cpp
+Ref.o : 	Ref.h Ref.cpp
+		$(CC) $(CFLAGS) -c Ref.cpp
 
-			
-/*
-PutCGI:	bibleajax.cgi
-		chmod 755 bibleajax.cgi
-		cp bibleajax.cgi /var/www/html/class/csc3004/$(USER)/cgi-bin
+Verse.o : 	Ref.h Verse.h Verse.cpp
+		$(CC) $(CFLAGS) -c Verse.cpp
 
+Bible.o : 	Ref.h Verse.h Bible.h Bible.cpp
+		$(CC) $(CFLAGS) -c Bible.cpp
+
+
+PutCGI: client
+		chmod 757 client
+		cp client /var/www/html/class/csc3004/dergill/cgi-bin
 		echo "Current contents of your cgi-bin directory: "
-		ls -l /var/www/html/class/csc3004/$(USER)/cgi-bin/
+		ls -l /var/www/html/class/csc3004/dergill/cgi-bin/
 
-PutHTML:
-		cp bibleajax.html /var/www/html/class/csc3004/$(USER)
-
+PutHTML: bibleindex.html
+		cp bibleindex.html  /var/www/html/class/csc3004/dergill
 		echo "Current contents of your HTML directory: "
-		ls -l /var/www/html/class/csc3004/$(USER)
-*/
+		ls -l  /var/www/html/class/csc3004/dergill
 
-clean:		
-		rm *.o core bibleajax.cgi
+clean:
+	rm *.o *# *~ client server
+
