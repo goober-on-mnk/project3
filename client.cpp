@@ -68,6 +68,7 @@ int main() {
   Fifo sendfifo("request");
 
   sendfifo.openwrite();
+  recvfifo.openread();
 
   //sendfifo.send()
   // Convert and check input data
@@ -119,7 +120,6 @@ int main() {
   
   sendfifo.send(input);
 
-  recvfifo.openread();
   string results = recvfifo.recv();
 
   log("Received string: " + results);

@@ -16,7 +16,7 @@ using namespace std;
 
 int main() {
 
-	string reference, text, next;
+	string reference, text, next, refNum, line;
 
 	//declarations and stuff bla bla bla
 	Bible webBible("/home/class/csc3004/Bibles/web-complete");
@@ -24,7 +24,7 @@ int main() {
 	logFile.open(logFilename.c_str(), ios::out);
 #endif
 
-	int b, c, v, r;
+	int b, c, v, r, location;
 	LookupResult result;
 	Verse verse;
 	makeMap();
@@ -42,7 +42,7 @@ int main() {
 
 	while (true) { //keep running in the background
 		
-		string line = recvfifo.recv(); // read in line
+		line = recvfifo.recv(); // read in line
 		cout << line << endl;
 		Ref ref(line);
 		log("Read Input");
@@ -61,8 +61,9 @@ int main() {
 		r = atoi(strrepeat.c_str());
 
 		//im sorry but this is how i decided to make the reference as a string and no im not changing it because its beautiful
-		string refNum = to_string(ref.getBook()).append(":").append(to_string(ref.getChap())).append(":").append(to_string(ref.getVerse()));
-		int location = webBible.indexSearch(refNum);
+		refNum = to_string(ref.getBook()).append(":").append(to_string(ref.getChap())).append(":").append(to_string(ref.getVerse()));
+		location = webBible.indexSearch(refNum);
+		
 		if (location == -1) {      //if the reference isn't found, start error handling
 			string error;
 			if (b < 1 || b > 66) {
@@ -121,6 +122,7 @@ int main() {
 				sendfifo.send(error);
 			}
 		}
+
 			//if no error is detected, call lookup
 			log("Past error handling");
 			verse = webBible.lookup(location);
